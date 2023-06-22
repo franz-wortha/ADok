@@ -1,0 +1,146 @@
+---
+title: "Technical Reproducibility"
+format:
+  html:
+    self-contained: true
+editor: visual
+---
+
+## Package Management - Relevance I
+
+-   Most analyses you will conduct will require the installation of additional packages
+    -   Developed decentralized by different groups
+    -   Often require functions from one another (dependencies)
+    -   Updated over time in vastly differing intervals
+-   Potential issues
+    -   Required packages can be incompatible
+        -   E.g., two packages require different versions of a dependency
+    -   Functions were changed $\rightarrow$ old scripts don't run after update
+    -   Default values are changed $\rightarrow$ results change
+    -   R's functionality gets updated $\rightarrow$ packages may not work at all
+
+## Package Management - Relevance II
+
+-   Reproducibility
+    -   Sharing data and scripts is at the core of open science efforts
+    -   Hardly achievable for analysis when script can't be run
+        -   On other machines
+        -   At later time points
+-   Save unnecessary effort when
+    -   Reusing parts of old scripts for new projects
+    -   Share scripts with colleagues
+
+## Projects
+
+-   A solution to most of the aforementioned issues
+-   Idea: Separate package libraries for each project
+    -   Only install required packages for a project
+    -   Breakage in a project does not affect other projects
+    -   Slimmer libraries $\rightarrow$ package conflicts less likely
+-   A common approach in programming-related work
+    -   Most IDEs include useful tools for project-based workflows
+
+## What is renv?
+
+-   R package that helps to manage package versions and dependencies in projects
+-   Aims
+    -   Enable robust, local projects
+    -   Enhance reproducibility
+-   Key functionalities
+    -   Automatically documents installed package versions
+    -   Provides a means to revert project-breaking changes
+    -   Scans project for required packages and advises installation of missing packages
+    -   Tools for package management (e.g., convenient way to update all packages)
+
+## How does `renv` Work?
+
+-   renv creates key files and folder when initiated
+    -   renv folder
+        -   Sub folders for libraries and settings
+        -   `activate.R` script, which makes sure that the local project library is used for the R session when its executed
+    -   `.Rprofile`
+        -   File that can be used to configure r functionality as/before it starts
+        -   Here sources("renv/activate.R")
+    -   Version of installed packages is saved in `renv.lock`
+
+## Project-based Workflow with `renv`
+
+1.  Set up renv
+
+```{r}
+#| echo: true
+#| eval: false
+renv::init()
+```
+
+2.  Work on project (install packages etc)
+
+```{r}
+#| echo: true
+#| eval: false
+renv::install("package I need")
+```
+
+3.  Save the packages (incl. version used)
+
+```{r}
+#| echo: true
+#| eval: false
+renv::snapshot()
+```
+
+4.  Change/update packages when necessary
+
+-   Successful: repeat 3
+-   Broken project: renv::revert to restore last snapshot
+
+```{r}
+#| echo: true
+#| eval: false
+renv::revert()
+```
+
+## Further Useful Tools
+
+-   Check the status of the current environment
+    -   Changes that are not yet recorded in `renv.lock`
+    -   Packages that are required but not installed
+
+```{r}
+#| echo: true
+#| eval: false
+renv::status()
+```
+
+-   Detect packages that are required
+
+```{r}
+#| echo: true
+#| eval: false
+renv::dependencies()
+```
+
+-   Copy required packages from local R installation rather than downloading them new
+
+```{r}
+#| echo: true
+#| eval: false
+renv::hydrate()
+```
+
+# `renv` Demo and Exercise
+
+## `renv` Exercise
+
+::: callout-warning
+Don't use your home directory or an existing project folder for this exercise.
+:::
+
+-   Initialize a new r environment in a folder new folder
+-   Create an r script in the folder
+    -   Add code to load two uninstalled libraries
+    -   Don't execute that script
+    -   Close the script
+-   Check the dependencies of the renv
+-   Install libraries and snapshot the environment
+-   Install an unnecessary library and revert the install

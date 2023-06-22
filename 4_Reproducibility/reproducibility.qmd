@@ -1,0 +1,225 @@
+---
+title: "Computational Reproducibility"
+format:
+  html:
+    self-contained: true
+editor: visual
+---
+
+## Random Number Generation
+
+-   Some models and functions involve random processes
+    -   Results change when repeated
+    -   E.g., splitting data into n random subsets to cross-validate an exploratory factor analysis
+-   Example: drawing 10 values from a Z-Distribution
+
+```{r}
+#| echo: true
+rnorm(10)
+rnorm(10)
+```
+
+## Setting seeds
+
+-   Sets a "fixed" seed that makes random processes reproducible
+
+```{r}
+#| echo: true
+set.seed(1)
+rnorm(10)
+set.seed(1)
+rnorm(10)
+```
+
+-   Use random seeds when reporting such results
+-   Make sure that the results do not vastly change when seed is changed
+    -   E.g., test model/function several time without or with different random seeds
+-   If there are substantial fluctuations, repeat process several times
+    -   Aggregate results or report fluctuation
+
+# Structuring Projects
+
+## Paths
+
+-   Absolute paths make it impossible to run script on other machines without changing them (e.g., "/Users/this/path/wont/work/for_you.csv")
+-   Key advantage of R projects: Console and terminal automatically start in project folder
+    -   Relative paths can be used (e.g., "./data/my_example_file.csv")
+-   `here` package can be used to overcome differences in OS
+
+{.fragement}
+
+```{r}
+#| echo: true
+library(here)
+
+# Create compatible path for current OS
+file_path <- here("data", "raw", "example_logfile.csv")
+file_path
+# Could be used to load a file
+# log_file <- read.csv(file_path, stringsAsFactors = FALSE)
+```
+
+## Folder Structure in Projects I
+
+-   Hard to find relevant files if all files and scripts are at the top level of your folder
+-   Projects should follow clear structure
+-   Example
+    -   Project
+        -   Data
+            -   Raw
+            -   Processed
+        -   Scripts
+        -   Output
+            -   Graphs
+            -   Tables
+
+## Folder Structure in Projects II
+
+-   The structure depends on your preferences and the project
+-   Recommendation: Keep to level as clean as possible (e.g., only folders, README.md etc.)
+-   [Resource](https://www.youtube.com/watch?v=GeN-qqNLLsM) that explains three ways to create the folder structure
+    -   In your file explorer
+    -   Using R
+    -   From the terminal
+
+{.callout-note} Avoid nesting projects within a projects.
+
+## Organizing Scripts
+
+-   All libraries should be loaded at the start of the script
+    -   Loading packages just before they are used is error prone when changes are made
+-   There is not agreed upon convention for their order
+    -   In order of their first use
+    -   Alphabetical
+    -   With masking in mind (e.g., load packages whose functions should not be masked last)
+
+## Splitting Scripts and Sourcing
+
+-   Scripts should be split if they get extensive and include multiple key steps
+    -   E.g., Functions, data import and pre-processing, analysis
+-   `source` if they create multiple objects necessary for subsequent steps
+    -   Masking and similar issues may occur
+-   If they only create a data set (e.g., during pre-processing) saving the result of that script as a file is preferable
+-   Objects can also be saved as R data
+    -   For large computations that can't be saved in standard file formats
+
+# Improving Code Readability
+
+## Piping and Nesting
+
+-   Piping: "Chaining" operations through a pipe operator
+-   The value of the left-hand side is used as the first argument of the right-hand side
+    -   Placeholder can be used to use value in as different argument in rhs
+-   Two implementations
+    -   `%>%` (`dplyr`/`tidyverse`)
+    -   `|>` (Base R [version 4.1.0](https://cran.r-project.org/doc/manuals/r-devel/NEWS.html) or later)
+-   Can greatly improve readability of nested function call
+    -   Ideal for data manipulation
+
+## Nesting - Example
+
+```{r}
+library(dplyr)
+```
+
+-   Can you quickly tell what this code does?
+
+{.fragment}
+
+```{r}
+#| echo: true
+summarise(
+  group_by(filter(iris, Species != "setosa"), Species),
+  sepal_length = mean(Sepal.Length),
+  petal_width = mean(Petal.Width)
+)
+```
+
+## Piping - Example
+
+-   How about now?
+
+```{r echo=TRUE}
+#| echo: true
+iris %>%
+  filter(Species != "setosa") %>%
+  group_by(Species) %>%
+  summarise(sepal_length = mean(Sepal.Length),
+            petal_width = mean(Petal.Width))
+```
+
+-   Pipe-related resources
+    -   [dplyr](https://dplyr.tidyverse.org/): powerfull data manipluation with pipes
+    -   [rstatix](https://rpkgs.datanovia.com/rstatix/): common statistical models with focus on piping
+
+## Commenting Code
+
+-   Comments are lines in scripts that are not evaluated
+-   IDEs (e.g., RStudio) will accentuate comments
+-   R + RStudio
+    -   In R comments start with `#`
+    -   Keyboard shortcut `Cmd/Ctrl + Shift + C`
+-   Comments can be used between or at the end of lines
+
+```{r}
+# Show that statement if not printed when commented out
+# print("This is an example for a comment")
+print("That comment didn't stop me!") # Code not 'disabled'
+```
+
+## Importance of Comments
+
+-   Readable and comprehensible code is essential for a reproducible workflow
+-   Comments are essential to efficiently resume your projects
+-   Enable others to work with your code more easily
+-   Commenting your code clearly takes practice and effort
+
+## Ideas to Effectively Comment
+
+-   There are no clear guidelines for commenting
+-   Be concise and precise
+-   Point out specifics that are not easily detectable
+-   State what a code snippet does
+
+```{r}
+#| echo: true
+# Get the absolute path of this file via Rstudioapi
+# Only run if rstudioapi is installed
+# library(rstudioapi)
+# if (require(rstudioapi)){
+#   dirname(rstudioapi::getSourceEditorContext()$path)
+# }
+```
+
+-   Don't state obvious things (the documentation handled that)
+-   Point out dependencies
+-   Find a commenting style that works for you
+
+## Naming
+
+-   Often overlooked when improving coding
+-   Less need to limit length of variable names with help of development tools (i.e., code completion)
+-   Variable and object naming makes code more readable
+    -   Can work like comments
+-   Common conventions
+    -   camelCase
+    -   Use_of_underscores
+    -   In R: `.` is often used instead of `_`
+        -   e.g., `read.csv`
+        -   Clashes with naming conventions in other languages, particularly object-oriented languages (e.g. python)
+-   Consistency is important
+    -   Functions with similar functionality should follow the same convention
+    -   Different conventions can be used for different objects (e.g., [Julia blue coding style]())
+
+## Outlook
+
+-   Project-based workflows are applicable to most languages
+-   Python
+    -   [Spyder](https://www.spyder-ide.org/) is it's equivalent to RStudio
+    -   [venv](https://docs.python.org/3/library/venv.html) works very similar to `renv`
+        -   Installing are still made with `pip`, but the libraries are saved in the virtual environment
+    -   [pyenv](https://github.com/pyenv/pyenv) can further change Python versions easily
+-   Julia
+    -   [VSCode](https://code.visualstudio.com/) is the officially supported IDE
+    -   Has a built in project mode (`julia -project`)
+    -   [Julia-up](https://github.com/JuliaLang/juliaup) enables easy switching between Julia versions

@@ -1,0 +1,206 @@
+---
+title: "Version Control with Git"
+format:
+  html:
+    self-contained: true
+editor: visual
+---
+
+## Scope
+
+-   This section will focus on minimal basics to use git for version control
+    -   Focus on a local git
+    -   Commands strictly necessary to work on simple analysis projects
+-   Reasons for this limitation
+    -   GitHub requires an account
+    -   Remote repositories are not necessarily compliant with data security and privacy restrictions
+        -   Infrastructure varies by institution (e.g., locally hosted repositories)
+    -   The integration of GitHub varies in most IDEs
+-   This approach can be easily extended to remote repositories (e.g., GitHub, GitLab)
+
+## Git
+
+-   Git is a version control tool
+-   Mostly known through the remote repository GitHub
+-   Tracks changes in files
+    -   'Checkpoints' have to be manually set
+    -   Mainly used for coding, can be used for documents as well (e.g., manuscripts)
+-   Alternative branches can be created to test things
+    -   Successful changes can be incorporated
+    -   Failed tests can be disregarded without affecting the project
+
+## Setting up Git
+
+-   [Download](https://git-scm.com/downloads) and install git
+    -   You can check if git is installed by typing `git` in in your shell
+    -   This will show a brief overview of git functions
+
+```{bash}
+#| echo: true
+#| eval: false
+git
+```
+
+-   Set your username and email
+    -   This is not a log in/set up of an account
+    -   Used to track who committed changes
+
+```{bash}
+#| echo: true
+#| eval: false
+git config --global user.name "Your Name"
+git config --global user.email "your@email.com"
+```
+
+```{bash}
+#| echo: true
+#| eval: false
+# Show username and email
+git config user.name
+git config user.email
+```
+
+## A Simplified Git Workflow
+
+1.  Initialize git (only required when starting a new project)
+
+```{bash}
+#| echo: true
+#| eval: false
+git init
+```
+
+2.  Work on project
+3.  Add files for commit
+
+```{bash}
+#| echo: true
+#| eval: false
+# Add specific files
+git add script1.R script2.R script1.R
+# Add all changed files to commit
+git add .
+```
+
+4.  Commit changes
+
+```{bash}
+#| echo: true
+#| eval: false
+git commit -m "Added demonstration scripts"
+```
+
+5.  Repeat 2-4
+
+## Reverting an Erroneous Commit
+
+1.  Get the commit hash of commit that broke project
+
+```{bash}
+#| echo: true
+#| eval: false
+git log
+```
+
+2.  Revert all changes of that commit
+
+-   This reversal is kept as a commit
+-   Information for the breaking commit are kept in the version history
+
+```{bash}
+#| echo: true
+#| eval: false
+git revert f07ceb7ab03b6b50d2f65c67b6cd8b280f0f2912
+```
+
+![Revert Illustration](git_revert.png)
+
+-   [Source](https://www.freecodecamp.org/news/git-revert-commit-how-to-undo-the-last-commit/)
+
+## Fixing Issues Before They are Committed
+
+-   Realize issue before files are added changes are committed
+    -   Revert uncommitted changes
+
+```{bash}
+#| echo: true
+#| eval: false
+# Revert uncommitted changes to a specific file
+git checkout -- file_that_broke_my_project.R
+# Reverting all uncommitted changes
+git checkout -- :/
+```
+
+## Testing on New Branches
+
+1.  Make sure you are up to date
+2.  Create new branch
+
+```{bash}
+#| echo: true
+#| eval: false
+git branch trying_something_new
+```
+
+3.  Switch to New Branch
+
+```{bash}
+#| echo: true
+#| eval: false
+git checkout trying_something_new
+```
+
+4.  Implement and test changes
+5.  They don't work $\rightarrow$ switch to back main branch and delete branch
+
+```{bash}
+#| echo: true
+#| eval: false
+git checkout main
+git branch -d trying_something_new
+```
+
+5.  They work $\rightarrow$ switch to main branch and merge branches
+
+```{bash}
+#| echo: true
+#| eval: false
+git checkout main
+git merge trying_something_new
+```
+
+## Ignoring Files
+
+-   You can tell to ignore files and folders
+    -   These never show up in git status even if they are changed
+-   This is achieved with the `.gitignore` file
+    -   Files can be listed explicitly
+    -   Patterns can be used to multiple files
+        -   All files in a folder (data/\*\*)
+        -   All files of a type (\*.sav)
+-   `renv::dependencies` skips any file listed in `.gitignore`
+
+## Further Material
+
+-   This intro to git was inspired by [this video](https://www.youtube.com/watch?v=USjZcfj8yxE) and the [corresponding material](https://zarkom.notion.site/zarkom/Introduction-to-Git-ac396a0697704709a12b6a0e545db049)
+-   [Git Cheat Sheet](https://training.github.com/downloads/github-git-cheat-sheet.pdf)
+
+# Git Demonstration
+
+Git workflow using the terminal and [GitHub Desktop](https://desktop.github.com/)
+
+# `Git` + `renv` exercise
+
+# Setting up an R Analysis Project with RStudio
+
+-   Open new project in the destination folder
+    -   `File > New Project`
+-   Initialize version control using git
+-   Initialize renv for package management
+    -   Check `git version control` and `use renv`
+-   Install required packages
+    -   Snapshot the package versions with renv
+    -   Stage and commit changes to the renv using git
+-   Set up the folder structure
+-   Import required data
+-   Start working on the project
